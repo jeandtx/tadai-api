@@ -1,14 +1,14 @@
 import pandas as pd
 import pickle
-dataset = pd.read_csv('./data/more data.csv')
+# dataset = pd.read_csv('./data/more data.csv')
 import re
 from sklearn.metrics.pairwise import cosine_similarity
 import nltk
-nltk.download('punkt')
 from nltk.tokenize import word_tokenize
-nltk.download('stopwords')
 from nltk.corpus import stopwords
-nltk.download('wordnet')
+# nltk.download('punkt')
+# nltk.download('stopwords')
+# nltk.download('wordnet')
 import string
 import re
 import lyricsgenius
@@ -21,9 +21,9 @@ def to_lower(text):
 
 def tokenize(text):
     return word_tokenize(text)
-english_stopwords = set(stopwords.words('english'))
 
 def remove_stopwords(tokens):
+    english_stopwords = set(stopwords.words('english'))
     return [word for word in tokens if word not in english_stopwords]
 
 def preprocess(text):
@@ -33,18 +33,18 @@ def preprocess(text):
     tokens = remove_stopwords(tokens)
     return tokens
 
-dataset['tokenized_lyrics'] = dataset['Lyrics'].apply(preprocess)
+# dataset['tokenized_lyrics'] = dataset['Lyrics'].apply(preprocess)
 
-model = pickle.load(open("./models/model.pkl", "rb"))
 
 def get_song_vector(tokenized_lyrics):
+    model = pickle.load(open("./models/model.pkl", "rb"))
     vectors = [model.wv[word] for word in tokenized_lyrics if word in model.wv]
     return sum(vectors) / len(vectors) if vectors else []
 
-dataset['song_vector'] = dataset['tokenized_lyrics'].apply(get_song_vector)
-API_KEY = "Vwb4Vm4moXv_6iYeDa_ibcfx3htmd0osTnOGDRaXmzwAmSJ6IfLu5POZ-_uab3sx"
+# dataset['song_vector'] = dataset['tokenized_lyrics'].apply(get_song_vector)
 
 def fetch_lyrics(artist_name, song_title):
+    API_KEY = "Vwb4Vm4moXv_6iYeDa_ibcfx3htmd0osTnOGDRaXmzwAmSJ6IfLu5POZ-_uab3sx"
     genius = lyricsgenius.Genius(API_KEY)
     song = genius.search_song(song_title, artist_name)
     return song.lyrics if song else None
@@ -72,6 +72,7 @@ def get_vector_for_lyrics(lyrics):
     return get_song_vector(tokenized_lyrics)
 
 def get_top_keywords_for_vector(vector, top_n=5):
+    model = pickle.load(open("./models/model.pkl", "rb"))
     # Calculate cosine similarity between the input vector and all word vectors in the model
     similarities = {word: cosine_similarity([vector], [model.wv[word]])[0][0] for word in model.wv.index_to_key}
     
@@ -82,8 +83,6 @@ def get_top_keywords_for_vector(vector, top_n=5):
 
 def recommend_top_10_songs_and_artists_with_keywords(artist_name, song_title):
     lyrics = fetch_lyrics(artist_name, song_title)
-    if not lyrics:
-        return "Could not fetch the lyrics. Please try another song."
     
     cleaned_lyrics = clean_and_preprocess(lyrics)
     print(cleaned_lyrics)
@@ -105,7 +104,26 @@ def recommend_top_10_songs_and_artists_with_keywords(artist_name, song_title):
     
     return recommendations
 
-artist = input("Enter an artist: ")
-song = input("Enter a song: ")
-recommended_top_10_songs_and_artists = recommend_top_10_songs_and_artists_with_keywords(artist, song)
-print(recommended_top_10_songs_and_artists)
+# artist = input("Enter an artist: ")
+# song = input("Enter a song: ")
+# recommended_top_10_songs_and_artists = recommend_top_10_songs_and_artists_with_keywords(artist, song)
+# print(recommended_top_10_songs_and_artists)
+
+def get_recommendations_lyrics(song_title, song_artist, songs=pd.read_csv('data/more data.csv'), number_of_songs=10):
+    nltk.download('punkt')
+    nltk.download('stopwords')
+    nltk.download('wordnet')
+    dataset = songs
+    dataset['tokenized_lyrics'] = dataset['Lyrics'].apply(preprocess)
+    dataset['song_vector'] = dataset['tokenized_lyrics'].apply(get_song_vector)
+    english_stopwords = set(stopwords.words('english'))
+    lyrics = fetch_lyrics(song_artist, song_title)
+    cleaned_lyrics = clean_and_preprocess(lyrics)
+    input_vector = get_vector_for_lyrics(cleaned_lyrics)
+    user_song_keywords = get_top_keywords_for_vector(input_vector)
+
+    similarities = [cosine_similarity([input_vector], [song_vector])[0][0] for song_vector in dataset['song_vector']]
+    top_10_indices = sorted(range(len(similarities)), key=lambda i: similarities[i], reverse=True)[:number_of_songs]
+    
+    selected_rows = dataset.iloc[top_10_indices]
+    return selected_rows

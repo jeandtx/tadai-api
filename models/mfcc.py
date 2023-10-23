@@ -5,7 +5,7 @@ import io
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from functions import get_closest_songs, get_song_index, add_song
+from models.functions import get_closest_songs, get_song_index, add_song
 
 def extract_features_from_mp3(mp3_link, max_seq_len=None):
     audio = requests.get(mp3_link)
@@ -38,14 +38,12 @@ def compute_pca(dataframe, max_seq_len=None):
     pca_df = pd.DataFrame(data=principal_components, columns=['PC1', 'PC2', 'PC3'])
     return pca_df
 
-def get_recommendations(song_name, song_artist, songs, number_of_songs=10):
+def get_recommendations_mfcc(song_name, song_artist, songs=pd.read_csv('./data/more data.csv'), number_of_songs=10):
     songs.dropna(subset=['Audio'], inplace=True)
     song_index = get_song_index(song_name, song_artist, songs)
     if song_index is None:
-        from functions import add_song
         songs = add_song(song_name, song_artist, songs)
         song_index = get_song_index(song_name, song_artist, songs)
     pca_df = compute_pca(songs) # todo: try to fetch pca_df from csv
-    pca_df.to_csv('pca.csv', index=False)
     closest_songs = get_closest_songs(song_index, pca_df, songs, number_of_songs)
     return closest_songs
