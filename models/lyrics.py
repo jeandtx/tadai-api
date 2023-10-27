@@ -44,7 +44,10 @@ def get_song_vector(tokenized_lyrics):
 # dataset['song_vector'] = dataset['tokenized_lyrics'].apply(get_song_vector)
 
 def fetch_lyrics(artist_name, song_title):
-    API_KEY = "Vwb4Vm4moXv_6iYeDa_ibcfx3htmd0osTnOGDRaXmzwAmSJ6IfLu5POZ-_uab3sx"
+    from dotenv import load_dotenv
+    import os
+    load_dotenv()
+    API_KEY = os.getenv('GENIUS_API_KEY')
     genius = lyricsgenius.Genius(API_KEY)
     song = genius.search_song(song_title, artist_name)
     return song.lyrics if song else None
