@@ -8,7 +8,7 @@ app = Flask(__name__)
 def hello_world():
     data = {
         'message': 'Hello, World!',
-        'version': 1.1,
+        'version': 1.2,
         'status': 'success',
     }
     response = jsonify(data)
