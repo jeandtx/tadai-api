@@ -27,7 +27,6 @@ def get_attributes():
                         }), 400
 
     recommendations = get_recommendations_attributes(song_title, song_artist, number_of_songs=nb_of_recommendations)[['Name', 'Artist']]
-    # todo: secure & handle user input
     data = {
         'message': 'Please find the recommendations in the data field',
         'status': 'success',
