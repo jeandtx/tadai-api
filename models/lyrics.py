@@ -14,6 +14,8 @@ import re
 import lyricsgenius
 
 def remove_punctuation(text):
+    if not isinstance(text, str):
+        text = str(text)
     return text.translate(str.maketrans('', '', string.punctuation))
 
 def to_lower(text):
@@ -112,21 +114,19 @@ def recommend_top_10_songs_and_artists_with_keywords(artist_name, song_title):
 # recommended_top_10_songs_and_artists = recommend_top_10_songs_and_artists_with_keywords(artist, song)
 # print(recommended_top_10_songs_and_artists)
 
-def get_recommendations_lyrics(song_title, song_artist, songs=pd.read_csv('data/more data.csv'), number_of_songs=10):
-    nltk.download('punkt')
-    nltk.download('stopwords')
-    nltk.download('wordnet')
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+english_stopwords = set(stopwords.words('english'))
+
+def get_recommendations_lyrics(song_title, song_artist, songs=pd.read_csv('./data/more data.csv'), number_of_songs=10):
     dataset = songs
     dataset['tokenized_lyrics'] = dataset['Lyrics'].apply(preprocess)
     dataset['song_vector'] = dataset['tokenized_lyrics'].apply(get_song_vector)
-    english_stopwords = set(stopwords.words('english'))
     lyrics = fetch_lyrics(song_artist, song_title)
     cleaned_lyrics = clean_and_preprocess(lyrics)
     input_vector = get_vector_for_lyrics(cleaned_lyrics)
-    user_song_keywords = get_top_keywords_for_vector(input_vector)
-
     similarities = [cosine_similarity([input_vector], [song_vector])[0][0] for song_vector in dataset['song_vector']]
     top_10_indices = sorted(range(len(similarities)), key=lambda i: similarities[i], reverse=True)[:number_of_songs]
-    
     selected_rows = dataset.iloc[top_10_indices]
     return selected_rows
