@@ -58,8 +58,6 @@ def add_song(song_title, song_artist, dataframe):
             song = song[non_empty_columns]
             
             dataframe = pd.concat([dataframe, song], ignore_index=True)
-            dataframe.drop_duplicates(subset=['Spotify ID'], inplace=True)
-            dataframe.to_csv('./data/more data.csv', index=False)
             return dataframe
 
 def get_closest_songs(song_index, pca_df, songs, number_of_songs=10):
