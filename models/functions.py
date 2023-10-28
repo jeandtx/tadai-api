@@ -42,22 +42,26 @@ def get_song_data(song_title, song_artist):
 
     return pd.DataFrame([data])
 
-def add_song(song_title, song_artist, dataframe):
+def add_song(song_title, song_artist, dataframe, mfcc=False):
     if len(dataframe.columns) != 19:
         raise ValueError('Dataframe must have 19 columns. Check if spotify features are included.')
     else:
         song = get_song_data(song_title, song_artist)
         if len(song) < 1:
             raise ValueError('Song not found')
-        elif song['Audio'].isnull().values[0]:
-            return 'Song does not have a preview'
         elif song['Spotify ID'][0] in dataframe['Spotify ID'].values:
             return dataframe
         else:
+            if song['Audio'].isnull().values[0]:
+                print( 'Song does not have a preview')
+                if mfcc:
+                    return dataframe, False
             non_empty_columns = song.columns[~song.isna().all()].tolist()
             song = song[non_empty_columns]
             
             dataframe = pd.concat([dataframe, song], ignore_index=True)
+            if mfcc:
+                return dataframe, True
             return dataframe
 
 def get_closest_songs(song_index, pca_df, songs, number_of_songs=10):
