@@ -60,7 +60,11 @@ def update_pca(song_data, pca_file_path):
     pca_df.to_csv(pca_file_path, index=False)
     return pca_df
 
-def get_recommendations_mfcc(song_name, song_artist, songs=pd.read_csv('./data/more data.csv'), number_of_songs=10):
+def get_recommendations_mfcc(song_name, song_artist, songs=None, number_of_songs=10):
+    if songs is None:
+        songs = pd.read_csv('./data/more data.csv')
+    songs = songs.copy()
+
     songs.dropna(subset=['Audio'], inplace=True)
     song_index = get_song_index(song_name, song_artist, songs)
     if song_index is None:
@@ -68,6 +72,9 @@ def get_recommendations_mfcc(song_name, song_artist, songs=pd.read_csv('./data/m
         if os.path.exists('./data/pca_mfcc.csv'):
             os.remove('./data/pca_mfcc.csv')
         songs = add_song(song_name, song_artist, songs)
+        if isinstance(songs, str):
+            print('No song sample found on Spotify -> bypassing MFCC PCA')
+            return songs
     pca_df = update_pca(songs, './data/pca_mfcc.csv')
     closest_songs = get_closest_songs(get_song_index(song_name, song_artist, pd.read_csv('./data/more data.csv')), pca_df, songs, number_of_songs)
     return closest_songs

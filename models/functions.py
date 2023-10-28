@@ -49,9 +49,14 @@ def add_song(song_title, song_artist, dataframe):
         song = get_song_data(song_title, song_artist)
         if len(song) < 1:
             raise ValueError('Song not found')
+        elif song['Audio'].isnull().values[0]:
+            return 'Song does not have a preview'
         elif song['Spotify ID'][0] in dataframe['Spotify ID'].values:
             return dataframe
         else:
+            non_empty_columns = song.columns[~song.isna().all()].tolist()
+            song = song[non_empty_columns]
+            
             dataframe = pd.concat([dataframe, song], ignore_index=True)
             dataframe.drop_duplicates(subset=['Spotify ID'], inplace=True)
             dataframe.to_csv('./data/more data.csv', index=False)
