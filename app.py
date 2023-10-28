@@ -1,14 +1,17 @@
 from flask import Flask, jsonify, request
 from models.attributes import get_recommendations_attributes
 from main import merged_model
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/predict": {"origins": "*"}})
 
 @app.route('/', methods=['GET'])
 def hello_world():
     data = {
         'message': 'Hello, World!',
-        'version': 2.0,
+        'version': 2.1,
         'status': 'success',
     }
     response = jsonify(data)
