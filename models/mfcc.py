@@ -46,8 +46,8 @@ def get_recommendations_mfcc(song_name, song_artist, songs=None, number_of_songs
     songs.dropna(subset=['Audio'], inplace=True)
     song_index = get_song_index(song_name, song_artist, songs)
     if song_index is None:
-        songs = add_song(song_name, song_artist, songs)
-        if isinstance(songs, str):
+        songs, sample = add_song(song_name, song_artist, songs, True)
+        if not sample:
             print('No song sample found on Spotify -> bypassing MFCC PCA')
             return songs
         song_index = get_song_index(song_name, song_artist, songs)
